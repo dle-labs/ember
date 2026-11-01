@@ -73,7 +73,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: preview
-          path: .svelte-kit/cloudflare
+          # The generated worker imports sibling output and cloudflare-tmp files.
+          path: .svelte-kit
           include-hidden-files: true
           retention-days: 1
 
@@ -97,7 +98,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: preview
-          path: .svelte-kit/cloudflare
+          path: .svelte-kit
       - name: Publish Web App
         uses: cloudflare/wrangler-action@v3
         with:

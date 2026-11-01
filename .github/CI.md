@@ -23,7 +23,9 @@ The shared setup restores the lockfile-keyed pnpm store and installs with
 by OS, architecture and lockfile, and ESLint by dependency/configuration
 hash plus commit. ESLint uses content-based invalidation after checkout.
 Playwright still checks/installs system dependencies on cache hits.
-Build output is passed as a one-day artifact rather than reused across commits.
+The complete `.svelte-kit` directory is passed as a one-day artifact because
+the generated Cloudflare worker imports sibling server output and manifest files.
+Build output is not reused across commits.
 
 PR runs cancel superseded runs; production and npm publishing do not.
 The manual PR `force_deploy` input forces validation, build and deployment.
