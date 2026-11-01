@@ -5,32 +5,24 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+  deployments: write
+
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 env:
   NODE_VERSION: 24.7.0
   PNPM_VERSION: 10.17.1
 
 jobs:
-  install-dependencies:
-    name: Install Dependencies
-    runs-on: ubuntu-latest
+  publish:
+    name: Publish
+    timeout-minutes: 15
+    environment: PRODUCTION
+    runs-on: ubicloud-standard-2-ubuntu-2404
     steps:
       - name: Git Checkout
         uses: actions/checkout@v5
-      - name: Setup environment
-        uses: ./.github/actions/env-setup
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          pnpm-version: ${{ env.PNPM_VERSION }}
-
-  publish:
-    name: Publish
-    environment: PRODUCTION
-    needs: [install-dependencies]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Git Checkout
-        uses: actions/checkout@v4
       - name: Setup environment
         uses: ./.github/actions/env-setup
         with:
@@ -50,16 +42,6 @@ jobs:
           # Optional: Enable this if you want to have GitHub Deployments triggered
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           packageManager: pnpm
-  create-github-release:
-    name: Create GitHub Release
-    needs: [publish]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Git Checkout (fetch tags)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Prepare release notes from CHANGELOG.md (Node)
         id: prepare_release
         run: |
@@ -70,22 +52,10 @@ jobs:
           cat RELEASE_BODY.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Setup environment (Node + pnpm)
-        uses: ./.github/actions/env-setup
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          pnpm-version: ${{ env.PNPM_VERSION }}
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build package
-        run: pnpm build
-
       - name: Pack npm package
         run: |
           # npm pack will create a .tgz in the workspace. Rename it to a known name including the tag.
-          npm pack
+          npm pack --ignore-scripts
           ARTIFACT=$(ls *.tgz | head -n1)
           TAG="${{ github.ref_name }}"
           TARGET="package-${TAG}.tgz"
@@ -97,17 +67,19 @@ jobs:
           TAG="${{ github.ref_name }}"
           ARCHIVE_NAME="sources-${TAG}.tar.gz"
           # Create a tarball of the repository at the tag
-          git archive --format=tar.gz --output="$ARCHIVE_NAME" "$TAG"
+          git archive --format=tar.gz --output="$ARCHIVE_NAME" "$GITHUB_SHA"
           ls -lh "$ARCHIVE_NAME"
 
       - name: Create GitHub release and upload sources
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
           body: ${{ steps.prepare_release.outputs.body }}
           draft: false
           prerelease: false
-          files: 'sources-${{ github.ref_name }}.tar.gz package-${{ github.ref_name }}.tgz'
+          files: |
+            sources-${{ github.ref_name }}.tar.gz
+            package-${{ github.ref_name }}.tgz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

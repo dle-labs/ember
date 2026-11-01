@@ -1,6 +1,6 @@
 name: Pull Request
 on:
-  pull_request: null
+  pull_request:
   workflow_dispatch:
     inputs:
       force_deploy:
@@ -9,100 +9,100 @@ on:
         required: false
         type: boolean
 
+permissions:
+  contents: read
+  pull-requests: read
+
 concurrency:
   cancel-in-progress: true
-  group: ${{ github.head_ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
 
 env:
   NODE_VERSION: 24.7.0
   PNPM_VERSION: 10.17.1
 
 jobs:
-  detect-changes:
-    name: Detect Changes
+  verify:
+    name: Verify
+    runs-on: ubicloud-standard-2-ubuntu-2404
+    timeout-minutes: 15
     outputs:
-      src: ${{ steps.path-filter.outputs.src }}
-    runs-on: ubuntu-latest
+      preview: ${{ steps.paths.outputs.preview == 'true' || inputs.force_deploy }}
     steps:
       - uses: actions/checkout@v5
-      - id: path-filter
+      - id: paths
         uses: ./.github/actions/path-filter
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    if: ${{ needs.detect-changes.outputs.src == 'true' || github.event.inputs.force_deploy == true }}
-    needs: [detect-changes]
-    steps:
-      - name: Git Checkout
-        uses: actions/checkout@v5
       - name: Setup environment
+        if: steps.paths.outputs.verify == 'true' || steps.paths.outputs.preview == 'true' || inputs.force_deploy
         uses: ./.github/actions/env-setup
         with:
           node-version: ${{ env.NODE_VERSION }}
           pnpm-version: ${{ env.PNPM_VERSION }}
+      - name: Restore ESLint cache
+        if: steps.paths.outputs.verify == 'true' || inputs.force_deploy
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .cache/eslint
+          key: eslint-${{ runner.os }}-${{ runner.arch }}-${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', 'svelte.config.js') }}-${{ github.sha }}
+          restore-keys: |
+            eslint-${{ runner.os }}-${{ runner.arch }}-${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', 'svelte.config.js') }}-
       - name: Lint
-        run: |
-          pnpm lint
-  resolve-playwright-version:
-    name: Resolve Playwright Version
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps['resolve-playwright-version'].outputs.version }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: resolve-playwright-version
-        id: resolve-playwright-version
-        run: |
-          version="$(yq -r '.devDependencies["playwright"] // .dependencies["playwright"] // ""' package.json)"
-          test -n "$version" || { echo "No playwright version found in package.json"; exit 1; }
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-
-  test:
-    runs-on: ubuntu-latest
-    name: Test
-    if: ${{ needs.detect-changes.outputs.src == 'true' || github.event.inputs.force_deploy == true }}
-    needs: [resolve-playwright-version, detect-changes]
-    timeout-minutes: 15
-    container:
-      image: mcr.microsoft.com/playwright:v${{ needs['resolve-playwright-version'].outputs.version }}
-      options: --user 1001
-    steps:
-      - name: Git Checkout
-        uses: actions/checkout@v5
-      - name: Setup environment
-        uses: ./.github/actions/env-setup
+        if: steps.paths.outputs.verify == 'true' || inputs.force_deploy
+        run: pnpm lint --cache --cache-strategy content --cache-location .cache/eslint
+      - name: Check types
+        if: steps.paths.outputs.verify == 'true' || inputs.force_deploy
+        run: pnpm check
+      - name: Restore Chromium
+        if: steps.paths.outputs.verify == 'true' || inputs.force_deploy
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          pnpm-version: ${{ env.PNPM_VERSION }}
+          path: ~/.cache/ms-playwright
+          key: chromium-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+      # Always ensure OS dependencies exist, including on a browser cache hit.
+      - name: Install Chromium and system dependencies
+        if: steps.paths.outputs.verify == 'true' || inputs.force_deploy
+        run: pnpm exec playwright install --with-deps chromium
       - name: Test
-        run: pnpm test
+        if: steps.paths.outputs.verify == 'true' || inputs.force_deploy
+        run: pnpm test --browser.headless
+      - name: Build
+        if: steps.paths.outputs.preview == 'true' || inputs.force_deploy
+        run: pnpm build
+      - name: Upload preview
+        if: (steps.paths.outputs.preview == 'true' || inputs.force_deploy) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview
+          path: .svelte-kit/cloudflare
+          include-hidden-files: true
+          retention-days: 1
+
   publish:
     name: Publish
     environment: STAGING
-    if: ${{ needs.detect-changes.outputs.src == 'true' || github.event.inputs.force_deploy == true }}
-    needs: [detect-changes, lint, test]
-    runs-on: ubuntu-latest
+    needs: verify
+    if: needs.verify.outputs.preview == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubicloud-standard-2-ubuntu-2404
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      deployments: write
     steps:
-      - name: Git Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup environment
         uses: ./.github/actions/env-setup
         with:
           node-version: ${{ env.NODE_VERSION }}
           pnpm-version: ${{ env.PNPM_VERSION }}
-      - env:
-          IS_CI: false
-        name: Build
-        run: |
-          pnpm build
+      - uses: actions/download-artifact@v4
+        with:
+          name: preview
+          path: .svelte-kit/cloudflare
       - name: Publish Web App
         uses: cloudflare/wrangler-action@v3
         with:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           command: pages deploy
-          # Optional: Enable this if you want to have GitHub Deployments triggered
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           packageManager: pnpm
