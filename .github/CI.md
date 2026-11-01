@@ -10,7 +10,9 @@ pnpm store cache use Ubicloud's transparent cache when enabled there.
   build the package and demo. Documentation and changeset-only PRs skip this
   work. Test-only changes skip the build and preview. Same-repository PRs
   deploy the already-built artifact through the `STAGING` environment;
-  fork PRs validate/build without deploying. Use `Verify` as the required
+  successful deployments add the preview URL to the job summary and comment
+  on the PR with the deployed revision. Fork PRs validate/build without deploying.
+  Use `Verify` as the required
   branch-protection check in place of the former `Lint` and `Test` jobs.
 - **Changeset:** relevant release metadata/tooling changes on `master`
   update the release PR or publish npm. Manual dispatch remains available.
