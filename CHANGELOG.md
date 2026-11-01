@@ -1,5 +1,11 @@
 # @dle.dev/ember
 
+## 3.2.6
+
+### Patch Changes
+
+- 8a7ffa4: Restore npm trusted publishing on a GitHub-hosted runner, update repository metadata, and report successful releases to Changesets Action v2.
+
 ## 3.2.5
 
 ### Patch Changes
