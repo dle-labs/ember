@@ -18,8 +18,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
 
 env:
-  NODE_VERSION: 24.7.0
-  PNPM_VERSION: 10.17.1
+  NODE_VERSION: 24.22.2
+  PNPM_VERSION: 12.16.1
 
 jobs:
   verify:
@@ -29,7 +29,7 @@ jobs:
     outputs:
       preview: ${{ steps.paths.outputs.preview == 'true' || inputs.force_deploy }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - id: paths
         uses: ./.github/actions/path-filter
       - name: Setup environment
@@ -43,9 +43,9 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: .cache/eslint
-          key: eslint-${{ runner.os }}-${{ runner.arch }}-${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', 'svelte.config.js') }}-${{ github.sha }}
+          key: eslint-${{ runner.os }}-${{ runner.arch }}-${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', 'vite.config.mts') }}-${{ github.sha }}
           restore-keys: |
-            eslint-${{ runner.os }}-${{ runner.arch }}-${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', 'svelte.config.js') }}-
+            eslint-${{ runner.os }}-${{ runner.arch }}-${{ env.NODE_VERSION }}-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', 'vite.config.mts') }}-
       - name: Lint
         if: steps.paths.outputs.verify == 'true' || inputs.force_deploy
         run: pnpm lint --cache --cache-strategy content --cache-location .cache/eslint
@@ -90,7 +90,7 @@ jobs:
       deployments: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Setup environment
         uses: ./.github/actions/env-setup
         with:
@@ -103,7 +103,7 @@ jobs:
       - name: Publish Web App
         env:
           WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler-output.jsonl
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

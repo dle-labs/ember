@@ -28,8 +28,8 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 env:
-  NODE_VERSION: 24.7.0
-  PNPM_VERSION: 10.17.1
+  NODE_VERSION: 24.22.2
+  PNPM_VERSION: 12.16.1
 
 jobs:
   release:
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubicloud-standard-2-ubuntu-2404
     steps:
       - name: Checkout code repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
       - name: Setup environment
         uses: ./.github/actions/env-setup
         with:
@@ -46,10 +46,10 @@ jobs:
           pnpm-version: ${{ env.PNPM_VERSION }}
       - name: Create Release Pull Request or Publish to npm
         id: changesets
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
-          publish: node ./.github/scripts/release.mts
-          commit: 'chore: update versions'
-          title: 'chore: update versions'
+          publish-script: node ./.github/scripts/release.mts
+          commit-message: 'chore: update versions'
+          pr-title: 'chore: update versions'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -11,8 +11,8 @@ permissions:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 env:
-  NODE_VERSION: 24.7.0
-  PNPM_VERSION: 10.17.1
+  NODE_VERSION: 24.22.2
+  PNPM_VERSION: 12.16.1
 
 jobs:
   publish:
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubicloud-standard-2-ubuntu-2404
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
       - name: Setup environment
         uses: ./.github/actions/env-setup
         with:
@@ -34,7 +34,7 @@ jobs:
         run: |
           pnpm build
       - name: Publish Web App
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -71,7 +71,7 @@ jobs:
           ls -lh "$ARCHIVE_NAME"
 
       - name: Create GitHub release and upload sources
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
