@@ -6,11 +6,11 @@ inputs:
     description: Whether to install dependencies
     required: false
   node-version:
-    default: 24.7.0
+    default: 24.22.2
     description: Node.js version
     required: false
   pnpm-version:
-    default: 10.17.1
+    default: 12.16.1
     description: PNPM version
     required: false
   registry-url:
@@ -21,11 +21,11 @@ name: Setup Environment
 runs:
   steps:
     - name: Setup PNPM
-      uses: pnpm/action-setup@v4
+      uses: pnpm/action-setup@v6
       with:
         version: ${{ inputs.pnpm-version }}
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v7
       with:
         cache: pnpm
         cache-dependency-path: pnpm-lock.yaml

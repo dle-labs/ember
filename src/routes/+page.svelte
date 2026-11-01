@@ -12,7 +12,7 @@
 		type Node,
 		Tree,
 		updateNode
-	} from '$lib/tree';
+	} from '#lib/tree/index.ts';
 
 	import { MOCK_CODE_STRING, MOCK_TREE } from '../__mock__/data';
 

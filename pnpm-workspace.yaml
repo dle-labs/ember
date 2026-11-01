@@ -1,2 +1,9 @@
-onlyBuiltDependencies:
-  - esbuild
+engineStrict: true
+allowBuilds:
+  '@parcel/watcher': true
+  '@tailwindcss/oxide': true
+  esbuild: true
+  sharp: true
+  workerd: true
+minimumReleaseAgeExclude:
+  - globals@17.14.0

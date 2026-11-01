@@ -6,7 +6,8 @@ import {
 	insertNode,
 	type Node,
 	type TreeData,
-	updateNode} from '$lib';
+	updateNode
+} from '#lib';
 
 describe('tree-utils', () => {
 	const mockTree: TreeData = {

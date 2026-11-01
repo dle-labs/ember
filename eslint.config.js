@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 
 import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
+import { loadConfig } from '@sveltejs/load-config';
 import { defineConfig } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
@@ -10,9 +11,11 @@ import unusedImports from 'eslint-plugin-unused-imports';
 import yml from 'eslint-plugin-yml';
 import globals from 'globals';
 import ts from 'typescript-eslint';
-import yamlParser from 'yaml-eslint-parser';
+import * as yamlParser from 'yaml-eslint-parser';
 
-import svelteConfig from './svelte.config.js';
+const loadedConfig = await loadConfig('./', { traverse: false });
+if (loadedConfig && 'error' in loadedConfig) throw loadedConfig.error;
+const svelteConfig = loadedConfig?.config;
 const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
 export default defineConfig(
