@@ -1,5 +1,14 @@
 # @dle.dev/ember
 
+## 3.2.5
+
+### Patch Changes
+
+- 32858d8: Remove the release-script output test from the test suite.
+- 420ae98: Maintenance: Add changesets to Renovate dependency PRs
+- 6b8c939: Maintenance: Update Patch & Minor
+- 38be6eb: Update the build, packaging, and test toolchain to SvelteKit 3, Vite 8, and Vitest 5, and refresh compatible dependencies.
+
 ## 3.2.4
 
 ### Patch Changes
