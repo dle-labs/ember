@@ -3,10 +3,9 @@
  *
  * Simple release helper that:
  *  - reads the current version from package.json
- *  - validates the release tag `v<version>` does not exist
- *  - creates an annotated git tag `v<version>`
- *  - pushes the tag to `origin`
- *  - runs `npm publish --access public`
+ *  - publishes the package if its version is not already on npm
+ *  - creates and pushes the release tag after publication succeeds
+ *  - reports the release through CHANGESETS_OUTPUT for Changesets Action v2
  *
  * Usage:
  *  node release.mts            # perform publish, tag, and push
@@ -15,13 +14,15 @@
  */
 
 import { execSync } from 'child_process';
-import { readFile } from 'fs/promises';
+import { appendFile, readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 
 const pkgPath = path.join(root, '../../', 'package.json');
+
+const changesetsOutput = process.env.CHANGESETS_OUTPUT;
 
 const dryRun =
 	process.env.DRY_RUN === '1' || process.argv.includes('--dry-run');
@@ -62,6 +63,10 @@ try {
 
 	console.log(`Releasing version ${version}`);
 
+	if (!dryRun && changesetsOutput) {
+		await writeFile(changesetsOutput, '');
+	}
+
 	const packageVersionPublished =
 		!dryRun && commandSucceeds(`npm view ${packageName}@${version} version`);
 	const localTagExists =
@@ -71,7 +76,7 @@ try {
 		commandSucceeds(`git ls-remote --exit-code --tags origin refs/tags/${tag}`);
 	const tagExists = localTagExists || remoteTagExists;
 
-	if (packageVersionPublished && tagExists) {
+	if (packageVersionPublished && remoteTagExists) {
 		console.log(`${packageName}@${version} is already published.`);
 		console.log(`Tag ${tag} already exists; nothing to release.`);
 		process.exit(0);
@@ -87,18 +92,31 @@ try {
 		}
 	}
 
+	if (!packageVersionPublished) {
+		console.log('Running: npm publish --access public');
+		run('npm publish --access public');
+	}
+
 	if (!tagExists) {
 		console.log(`Creating git tag ${tag}`);
 		run(`git tag -a ${tag} -m "${tag}"`);
+	}
 
+	if (!remoteTagExists) {
 		console.log(`Pushing tag ${tag} to origin`);
 		run(`git push origin ${tag}`);
 	}
 
-	if (!packageVersionPublished) {
-		console.log('Running: npm publish --access public');
-		run('npm publish --access public');
-		console.log(`New tag: ${tag}`);
+	if (remoteTagExists && !localTagExists) {
+		// Changesets Action resolves the reported tag from the local checkout.
+		run(`git fetch origin tag ${tag}`);
+	}
+
+	if (!dryRun && changesetsOutput) {
+		await appendFile(
+			changesetsOutput,
+			JSON.stringify({ type: 'git-tag', tag, packageName }) + '\n'
+		);
 	}
 
 	console.log('Release script finished.');
