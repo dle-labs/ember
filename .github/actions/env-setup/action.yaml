@@ -33,6 +33,6 @@ runs:
         registry-url: ${{ inputs.registry-url }}
     - if: ${{ inputs.install-deps == 'true' }}
       name: Install Dependencies
-      run: pnpm i --frozen-lockfile
+      run: pnpm install --frozen-lockfile --prefer-offline
       shell: sh
   using: composite

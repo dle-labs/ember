@@ -9,6 +9,15 @@ on:
   push:
     branches:
       - master
+    paths:
+      - '.changeset/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.npmrc'
+      - '.github/workflows/changeset.yaml'
+      - '.github/actions/env-setup/**'
+      - '.github/scripts/release.mts'
   workflow_dispatch:
     inputs:
       force_deploy:
@@ -26,10 +35,10 @@ jobs:
   release:
     name: Release
     timeout-minutes: 15
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2-ubuntu-2404
     steps:
       - name: Checkout code repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup environment
         uses: ./.github/actions/env-setup
         with:

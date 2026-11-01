@@ -1,20 +1,23 @@
-description: Determines which paths have changed in the repository
-
 name: Path Filter
+description: Select validation and preview work from changed files
 outputs:
-  src:
-    description: Whether src or dependencies have been changed
-    value: ${{ steps.filter.outputs.src }}
-
+  verify:
+    description: Whether source, tests, dependencies or CI configuration changed
+    value: ${{ steps.filter.outputs.verify }}
+  preview:
+    description: Whether app, package or deployment inputs changed
+    value: ${{ steps.filter.outputs.preview }}
 runs:
+  using: composite
   steps:
     - id: filter
-      uses: dorny/paths-filter@v2
+      uses: dorny/paths-filter@v3
       with:
+        predicate-quantifier: every
         filters: |
-          src:
-            - 'src/**'
-            - 'package.json'
-            - 'pnpm-lock.yaml'
-        list-files: json
-  using: composite
+          verify:
+            - '{src/**,static/**,scripts/**,.github/scripts/**,*config*,vitest-setup-*,package.json,pnpm-lock.yaml,pnpm-workspace.yaml,.npmrc,.node-version,.nvmrc,patches/**,.github/actions/**,.github/workflows/pull-request.yaml}'
+          preview:
+            - '{src/**,static/**,svelte.config.*,vite.config.*,tsconfig.json,wrangler.jsonc,package.json,pnpm-lock.yaml,pnpm-workspace.yaml,.npmrc,.node-version,.nvmrc,patches/**,.github/actions/**,.github/workflows/pull-request.yaml}'
+            - '!src/**/*.{test,spec}.{js,ts}'
+            - '!src/tests/**'
