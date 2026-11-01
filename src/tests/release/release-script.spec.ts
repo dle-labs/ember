@@ -1,6 +1,8 @@
 import { execFileSync } from 'child_process';
 import { describe, expect, test } from 'vitest';
 
+import { version } from '../../../package.json';
+
 describe('release script', () => {
 	test('emits the Changesets tag signal after publish', () => {
 		const output = execFileSync(
@@ -12,6 +14,6 @@ describe('release script', () => {
 			}
 		);
 
-		expect(output).toContain('New tag: v3.2.4');
+		expect(output).toContain(`New tag: v${version}`);
 	});
 });
