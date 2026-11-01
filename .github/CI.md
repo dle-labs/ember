@@ -1,6 +1,8 @@
 # CI workflows
 
-All jobs use `ubicloud-standard-2-ubuntu-2404`. The Ubicloud GitHub App
+Validation and web deployment jobs use `ubicloud-standard-2-ubuntu-2404`.
+The Changeset job uses GitHub-hosted `ubuntu-24.04` because npm trusted
+publishing does not support self-hosted runners. The Ubicloud GitHub App
 must have access to this repository. Standard GitHub cache actions and the
 pnpm store cache use Ubicloud's transparent cache when enabled there.
 
@@ -38,3 +40,17 @@ Validate workflow edits with actionlint (allow the Ubicloud runner label),
 Prettier and representative path-filter cases. Measure cold and warm hosted
 runs before claiming a runtime improvement; local checks cannot establish
 runner provisioning, cache hit rates or deployment success.
+
+## npm trusted publishing
+
+Configure the trusted publisher for `@dle.dev/ember` on npm with GitHub owner
+`dle-labs`, repository `ember`, workflow `changeset.yaml`, no environment name,
+and publishing enabled. The workflow has `id-token: write` permission. Update
+the npm setting after repository transfers; GitHub redirects do not update it.
+
+The release script publishes before creating or pushing tags and supports
+retrying an unpublished version whose tag already exists. It writes structured
+`git-tag` events to `CHANGESETS_OUTPUT` for Changesets Action v2 after success.
+
+A local dry run or mocked command check cannot verify npm's OIDC trust settings;
+that requires a successful publish from the configured GitHub workflow.

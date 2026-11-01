@@ -35,7 +35,8 @@ jobs:
   release:
     name: Release
     timeout-minutes: 15
-    runs-on: ubicloud-standard-2-ubuntu-2404
+    # npm trusted publishing does not support self-hosted runners.
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code repository
         uses: actions/checkout@v7
