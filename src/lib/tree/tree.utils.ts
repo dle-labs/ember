@@ -1,5 +1,6 @@
 import type { Node, TreeData } from './tree.types';
 
+/** @deprecated Mutates the tree using DFS. Prefer the immutable /tree entry point. */
 export function insertNode<T extends object = object>({
 	node,
 	tree,
@@ -51,6 +52,7 @@ export function insertNode<T extends object = object>({
 	}
 }
 
+/** @deprecated Mutates the tree using DFS. Prefer removeNode from /tree. */
 export function deleteNode<T extends object = object>({
 	node,
 	tree
@@ -97,6 +99,7 @@ export function deleteNode<T extends object = object>({
 	}
 }
 
+/** @deprecated Replaces the entire node in place. Prefer patchNode from /tree. */
 export function updateNode<T extends object = object>({
 	node,
 	tree

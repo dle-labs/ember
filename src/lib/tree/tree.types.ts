@@ -2,20 +2,9 @@
  * A node in the tree. Can have any extra properties
  */
 export type Node<T extends object = object> = T & {
-	/*
-	 * A unique identifier for the node. This is
-	 * required to perform actions on the tree. If it
-	 * is not unique, actions will not work as expected.
-	 * Most implementations use arrays here and loop over everything
-	 * to find the right node, but this implementation
-	 * uses a record for O(1) access.
-	 */
+	/** Globally unique ID; records must use the same ID as their key. */
 	id: string;
-	/*
-	 * This property gets tacked on to the tree
-	 * which is passed in and lets you determine
-	 * if a node is expanded in the node snippet
-	 */
+	/** Legacy Tree expansion. TreeView keeps expansion in expandedIds. */
 	expanded?: boolean;
 	children?: Record<string, Node<T>>;
 	/*

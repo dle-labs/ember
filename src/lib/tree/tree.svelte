@@ -1,5 +1,5 @@
 <script lang="ts" generics="SingleNode extends object">
-	import { onMount, type Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
 	import {
 		type BlurParams,
@@ -11,14 +11,9 @@
 	} from 'svelte/transition';
 
 	import Self from './tree.svelte';
-	import type { Node, TreeData } from './tree.types';
+	import type { TreeData } from './tree.types';
 	type ParamsType =
-		| FadeParams
-		| BlurParams
-		| FlyParams
-		| SlideParams
-		| ScaleParams
-		| undefined;
+		FadeParams | BlurParams | FlyParams | SlideParams | ScaleParams | undefined;
 
 	type TransitionFunc = (
 		node: HTMLElement,
@@ -44,30 +39,6 @@
 		transitionParams,
 		transitionWrapperProps
 	}: Props = $props();
-
-	// Ensure all nodes have an expanded property
-	// If they don't, default to false
-	// This is done on mount to avoid issues with
-	// SSR and hydration
-	onMount(() => {
-		tree = Object.entries(tree).reduce(
-			(
-				acc: TreeData<SingleNode>,
-				[key, value]: [key: string, value: Node<SingleNode>]
-			) => {
-				acc[key] = {
-					...value,
-					expanded:
-						Object.hasOwn(value, 'expanded') &&
-						typeof value.expanded === 'boolean'
-							? value.expanded
-							: false
-				};
-				return acc;
-			},
-			{}
-		);
-	});
 </script>
 
 {#each Object.entries(tree) as [id, content] (id)}
@@ -91,6 +62,8 @@
 						{wrapperProps}
 						{wrapperElement}
 						{transition}
+						{transitionParams}
+						{transitionWrapperProps}
 					/>
 				</div>
 			{/if}

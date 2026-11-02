@@ -26,3 +26,6 @@ vite.config.ts.timestamp-*
 *storybook.log
 storybook-static
 .tsbuildinfo.json
+
+# Browser test diagnostics
+.vitest/

@@ -5,7 +5,7 @@
 
 	// Use a plain mutable tree variable so tests can bind to it.
 	// We deep-clone the mock to avoid shared mutation between tests.
-	let tree = $state(MOCK_TREE);
+	let tree = $state(structuredClone(MOCK_TREE));
 
 	// The snippet receives content and exposes action buttons to drive
 	// the node actions directly from tests via data-testid attributes.

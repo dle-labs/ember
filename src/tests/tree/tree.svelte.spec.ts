@@ -4,11 +4,6 @@ import { render } from 'vitest-browser-svelte';
 
 describe('Accordion component (integration)', () => {
 	it('renders nodes and supports toggle/insert/update/delete via actions', async () => {
-		// Provide a minimal $state stub used by Accordion at module initialization
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore
-		globalThis.$state = (v: unknown) => v;
-
 		const Harness = (await import('./test-harness.spec.svelte')).default;
 
 		// Import the mock tree synchronously so we can reference a known id
@@ -37,21 +32,17 @@ describe('Accordion component (integration)', () => {
 		// Update the original node name
 		const update = page.getByTestId(`update-${nodeId}`);
 		await update.click();
-		await expect.element(node).toBeInTheDocument();
+		await expect
+			.element(page.getByText('Updated Node', { exact: true }))
+			.toBeInTheDocument();
 
 		// Delete the inserted node via its delete button
 		const deleteBtn = page.getByTestId(`delete-${nodeId}-new`);
 		await expect.element(deleteBtn).toBeInTheDocument();
 		await deleteBtn.click();
 
-		// Trying to get the deleted node should throw (not found)
-		let found = true;
-		try {
-			const node = page.getByTestId(`node-${nodeId}-new`);
-			await expect.element(node).toBeInTheDocument();
-		} catch {
-			found = false;
-		}
-		expect(found).toBe(false);
+		await expect
+			.element(page.getByTestId(`node-${nodeId}-new`))
+			.not.toBeInTheDocument();
 	});
 });
