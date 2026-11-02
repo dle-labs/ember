@@ -53,10 +53,14 @@
 		{#if context.hasChildren}<button
 				aria-disabled="false"
 				aria-label={`Toggle ${value.id}`}
+				tabindex={-1}
 				onclick={context.toggle}>Toggle</button
 			>{/if}
-		<button aria-label={`Select ${value.id}`} onclick={context.activate}
-			>{String(value.name)}</button
+		<input aria-label={`Edit ${value.id}`} />
+		<button
+			tabindex={-1}
+			aria-label={`Select ${value.id}`}
+			onclick={context.activate}>{String(value.name)}</button
 		>
 	{/snippet}
 </TreeView>

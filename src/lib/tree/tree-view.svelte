@@ -47,7 +47,7 @@
 				expandedIds = expandedIds.filter((id) => current.nodes.has(id));
 			if (selectedIds.some((id) => !current.nodes.has(id)))
 				selectedIds = selectedIds.filter((id) => current.nodes.has(id));
-			if (!active || !current.nodes.has(active)) return;
+			if (active == null || !current.nodes.has(active)) return;
 			// This local snapshot is assigned back once after collecting ancestors.
 			// eslint-disable-next-line svelte/prefer-svelte-reactivity
 			const next = new Set(expandedIds);
@@ -66,7 +66,7 @@
 		const visible = rows;
 		const current = index;
 		const id = untrack(() => focusedId);
-		if (id && !positions.has(id)) {
+		if (id != null && !positions.has(id)) {
 			let parent = previousIndex?.parents.get(id);
 			while (parent != null && !positions.has(parent)) {
 				parent = previousIndex?.parents.get(parent);
@@ -77,7 +77,7 @@
 			const hadFocus = element?.contains(document.activeElement);
 			focusedId = target ?? null;
 			if (hadFocus) {
-				if (target) focus(target);
+				if (target != null) focus(target);
 				else void tick().then(() => element.focus());
 			}
 		}
@@ -99,7 +99,15 @@
 		};
 	}
 
+	// Row-label and disclosure controls delegate interaction back to the tree.
+	// Focus synchronously so an onActivate callback can still move focus elsewhere.
+	function focusRow(id: string) {
+		focusedId = id;
+		itemElements.get(id)?.focus();
+	}
+
 	function toggle(id: string) {
+		focusRow(id);
 		if (!index.children.get(id)?.length) return;
 		expandedIds = expanded.has(id)
 			? expandedIds.filter((value) => value !== id)
@@ -107,6 +115,7 @@
 	}
 
 	function activate(id: string) {
+		focusRow(id);
 		if (disabled.has(id)) return;
 		if (selection === 'single')
 			selectedIds = deselectable && selected.has(id) ? [] : [id];
@@ -167,7 +176,7 @@
 				)?.node.id;
 		}
 		event.preventDefault();
-		if (target) focus(target);
+		if (target != null) focus(target);
 	}
 </script>
 
