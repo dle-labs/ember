@@ -6,7 +6,7 @@
 		"email": "github@dle.dev"
 	},
 	"license": "MIT",
-	"description": "A headless, accessible, and highly customizable accordion component for Svelte.",
+	"description": "Headless Svelte trees with controlled interaction and immutable tree utilities.",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/dle-labs/ember.git"
@@ -129,7 +129,16 @@
 			"types": "./dist/tree/tree.svelte.d.ts",
 			"svelte": "./dist/tree/tree.svelte"
 		},
-		"./package.json": "./package.json"
+		"./package.json": "./package.json",
+		"./tree": {
+			"types": "./dist/tree/data.d.ts",
+			"import": "./dist/tree/data.js",
+			"default": "./dist/tree/data.js"
+		},
+		"./tree-view.svelte": {
+			"types": "./dist/tree/tree-view.svelte.d.ts",
+			"svelte": "./dist/tree/tree-view.svelte"
+		}
 	},
 	"imports": {
 		"#lib": "./src/lib/index.ts",

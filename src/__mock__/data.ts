@@ -56,107 +56,30 @@ export const MOCK_TREE = {
 };
 
 export const MOCK_CODE_STRING = `<script lang="ts">
-    import { Tree, type NodeProps } from '@dle.dev/ember';
-	import clsx from 'clsx';
-	import { v4 as uuid } from 'uuid';
-	const a = uuid();
-	const b = uuid();
-	const c = uuid();
-     // Just an example of a tree, the actual mock tree can be 
-     // found in the repository for this example
-	let tree = $state({
-		[a]: {
-			id: a,
-			name: 'Root',
-			children: {
-				[c]: {
-					id: c,
-					name: 'Child of root'
-				}
-			}
-		},
-		[b]: {
-			id: b,
-			name: 'Another Root',
-			children: {}
-		}
-	});
+  import { TreeView } from '@dle.dev/ember';
+  import { fromFlat, patchNode } from '@dle.dev/ember/tree';
 
-</script>	
-	
-// You're in charge here. The node snippet gets loaded 
-// with three actions. Insert, Delete and Update.
-{#snippet node(content: nodeProps<{}>)}
-	{@const disabled = !(
-		content.children && Object.keys(content.children).length > 0
-	)}
-	<div
-		transition:fly
-		class={clsx(
-			'mb-2 inline-flex nodes-baseline',
-			'justify-baseline rounded-2xl border-[1px]',
-			'border-primary-200 bg-primary-50 p-4',
-			'align-baseline'
-		)}
-	>
-		<button
-			{disabled}
-			type="button"
-			class={clsx(
-				'cursor-pointer',
-				'mr-2 rounded-full border-[1px]',
-				{
-					'bg-primary-100 hover:bg-primary-200': !disabled,
-					'cursor-not-allowed bg-gray-200': disabled
-				},
+  let tree = $state.raw(fromFlat([
+    { id: 'root', parentId: null, name: 'Root' },
+    { id: 'child', parentId: 'root', name: 'Child' }
+  ], { getId: (node) => node.id, getParentId: (node) => node.parentId }));
+  let expandedIds = $state<string[]>([]);
+  let selectedIds = $state<string[]>([]);
 
-				'px-2 ',
-				'flex nodes-baseline justify-baseline'
-			)}
-			onclick={(e) => {
-				e.preventDefault();
-				content.actions.toggle();
-			}}
-		>
-			<div
-				class={clsx('m-x-1 my-2 h-4 w-4 cursor-pointer transition-all  ', {
-					'rotate-90': content.expanded
-				})}
-			>
-				<img src="/chevron.svg" alt="Chevron icon" />
-			</div>
-		</button>
-		<h1>{content.name}</h1>
+  function rename(id: string) {
+    tree = patchNode({ tree, id, patch: { name: 'Updated node' } });
+  }
+</script>
 
-		<button
-			class="hover:bg-primary-100flex-col ml-2 flex cursor-pointer rounded-sm border-[1px] px-4 py-2"
-			type="button"
-			onclick={() => {
-				if (action === 'insert') {
-					content.actions.insert({
-						id: crypto.randomUUID(),
-						name: 'New Node',
-						children: {}
-					});
-				} else if (action === 'update') {
-					content.actions.update({
-						...content,
-						name: 'Updated Node'
-					});
-				} else if (action === 'delete') {
-					content.actions.delete();
-				}
-			}}>{action}</button
-		>
-	</div>
-{/snippet}
-
-<Tree
-	{node}
-	bind:tree
-	wrapperProps={{
-		class: 'ml-6'
-	}}
-	wrapperElement="span"
-/>
+<TreeView {tree} label="Collections" bind:expandedIds bind:selectedIds>
+  {#snippet node(value, context)}
+    <div style:padding-left={context.depth * 16 + 'px'}>
+      {#if context.hasChildren}
+        <button tabindex="-1" aria-label="Toggle children" onclick={context.toggle}>Toggle</button>
+      {/if}
+      <button tabindex="-1" onclick={context.activate}>{value.name}</button>
+      <button onclick={() => rename(value.id)}>Rename</button>
+    </div>
+  {/snippet}
+</TreeView>
 `;
