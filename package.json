@@ -27,7 +27,7 @@
 		"build": "vite build && npm run prepack",
 		"preview": "vite preview",
 		"preview:cf": "pnpm build && wrangler pages dev ./.svelte-kit/cloudflare",
-		"prepare": "svelte-kit sync && svelte-package && husky",
+		"prepare": "husky",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",

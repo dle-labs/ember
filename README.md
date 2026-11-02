@@ -174,6 +174,4 @@ node scripts/benchmark-tree.mjs
 ```
 
 Install Chromium with `pnpm exec playwright install chromium` before browser tests.
-Benchmarks report local utility timings, not browser rendering guarantees. Git
-commit dependencies run `prepare` to build `dist`; normal registry tarballs
-already contain the packaged files.
+Benchmarks report local utility timings, not browser rendering guarantees.
