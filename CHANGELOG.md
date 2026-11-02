@@ -1,5 +1,16 @@
 # @dle.dev/ember
 
+## 3.3.0
+
+### Minor Changes
+
+- a9056d2: Add controlled, accessible TreeView rendering with independent expansion and selection, indexed navigation, keyboard focus recovery, and active-path reveal that respects manual collapse. Add a data-only tree entry point with validated indexes, immutable CRUD and moves, a snapshot controller, and flat/nested-array conversion utilities. Preserve legacy exports while fixing input identity changes and nested transition configuration in Tree. Update examples and document mutation complexity and ordering constraints.
+
+### Patch Changes
+
+- cbf8738: Maintenance: Update dependency svelte to ^5.57.3
+- a9056d2: Restore tree keyboard navigation after activating or toggling a row through snippet controls. Support empty-string IDs consistently in active-path reveal, keyboard navigation and focus recovery, while preserving independent embedded controls' keyboard behavior.
+
 ## 3.2.6
 
 ### Patch Changes
