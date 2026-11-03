@@ -17,7 +17,6 @@ export default defineConfig({
 				process.env.ENVIRONMENT === 'ci'
 					? nodeAdapter()
 					: cloudflareAdapter({
-							routes: { include: ['/*'], exclude: ['<all>'] },
 							platformProxy: {
 								configPath: 'wrangler.jsonc',
 								environment: process.env.ENVIRONMENT,

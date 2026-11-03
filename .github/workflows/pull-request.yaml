@@ -100,26 +100,24 @@ jobs:
         with:
           name: preview
           path: .svelte-kit
-      - name: Publish Web App
+      - name: Publish Worker preview
         env:
-          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler-output.jsonl
-        uses: cloudflare/wrangler-action@v4
-        with:
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          command: pages deploy
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          packageManager: pnpm
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PREVIEW_NAME: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('manual-{0}', github.run_id) }}
+        run: pnpm exec wrangler preview --name "$PREVIEW_NAME" --json > "$RUNNER_TEMP/worker-preview.json"
       - name: Read preview URL from Wrangler
-        id: pages
+        id: worker
         run: |
           node --input-type=module <<'JS'
           import { readFileSync, appendFileSync } from 'node:fs';
-          const output = readFileSync(process.env.RUNNER_TEMP + '/wrangler-output.jsonl', 'utf8').trim().split('\n').map(JSON.parse);
-          const deployment = output.find(value => value.type === 'pages-deploy' && value.version === 1);
-          if (!deployment?.url) throw new Error('Wrangler did not return a Pages deployment URL');
-          const url = new URL(deployment.url);
-          if (url.protocol !== 'https:' || !url.hostname.endsWith('.pages.dev')) throw new Error('Wrangler returned an invalid Pages URL');
+          const result = JSON.parse(readFileSync(process.env.RUNNER_TEMP + '/worker-preview.json', 'utf8'));
+          const previewUrl = result.preview?.urls?.find(value => {
+            const url = new URL(value);
+            return url.protocol === 'https:' && url.hostname.endsWith('.workers.dev') && !url.username && !url.password;
+          });
+          if (!previewUrl) throw new Error('Wrangler did not return a Workers preview URL');
+          const url = new URL(previewUrl);
           appendFileSync(process.env.GITHUB_OUTPUT, 'url=' + url.origin + '\n');
           appendFileSync(process.env.GITHUB_STEP_SUMMARY, '### Preview\n\n[Open web preview](' + url.origin + ')\n');
           JS
@@ -127,7 +125,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         env:
-          PREVIEW_URL: ${{ steps.pages.outputs.url }}
+          PREVIEW_URL: ${{ steps.worker.outputs.url }}
         with:
           script: |
             await github.rest.issues.createComment({
