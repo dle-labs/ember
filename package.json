@@ -26,7 +26,7 @@
 		"lib-helpers": "pnpm gen:component-data-prop-value && pnpm gen:docspropvalue && pnpm format && pnpm prepack && pnpm gen:exports && pnpm copy:packagejson && pnpm format",
 		"build": "vite build && npm run prepack",
 		"preview": "vite preview",
-		"preview:cf": "pnpm build && wrangler pages dev ./.svelte-kit/cloudflare",
+		"preview:cf": "pnpm build && wrangler dev",
 		"prepare": "husky",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
