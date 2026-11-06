@@ -36,7 +36,7 @@ jobs:
       - name: Publish Web App
         uses: cloudflare/wrangler-action@v4
         with:
-          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           command: pages deploy
           # Optional: Enable this if you want to have GitHub Deployments triggered
