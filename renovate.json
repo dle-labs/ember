@@ -7,5 +7,11 @@
 		"dataFileTemplate": "{\"title\":\"{{{prTitle}}}\",\"branchName\":\"{{{branchName}}}\",\"upgrades\":[{{#each upgrades}}{\"depName\":\"{{{depName}}}\",\"newVersion\":\"{{{newVersion}}}\",\"updateType\":\"{{{updateType}}}\",\"depType\":\"{{{depType}}}\"}{{#unless @last}},{{/unless}}{{/each}}]}",
 		"fileFilters": [".changeset/*.md"],
 		"executionMode": "branch"
-	}
+	},
+	"packageRules": [
+		{
+			"matchDepNames": ["typescript"],
+			"allowedVersions": "<7.0.0"
+		}
+	]
 }
