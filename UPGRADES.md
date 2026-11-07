@@ -46,7 +46,7 @@ Added `@sveltejs/load-config` 0.2.3 for ESLint configuration loading and `@vites
 
 ## Compatibility decisions
 
-- TypeScript 7.0.2 is available, but `svelte-check` 4.7.7 accepts TypeScript 5/6 and `typescript-eslint` 8.72.1 requires TypeScript below 6.1. Use 6.0.3 until both tools support 7.
+- TypeScript 7.0.2 ships no JavaScript API, so `typescript-eslint` 8.72.1 (TypeScript below 6.1), `svelte-check`, `@sveltejs/package`, and SvelteKit still load `typescript` 6.0.3. Type checking runs on TypeScript 7 (tsgo) through `svelte-check --tsgo`, which uses the `@typescript/native` alias (`npm:typescript@~7.0.2`). Keep `typescript` on 6.x until TypeScript 7.1 ships its API and these tools support it.
 - `@types/node` 26.6.6 is available. Use 24.19.2 to match the repository's Node 24 runtime; CI moves from 24.7.0 to 24.22.2.
 - The published Svelte peer range remains unchanged because the library source does not require new Svelte APIs.
 
