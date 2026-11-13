@@ -1,5 +1,12 @@
 # @dle.dev/ember
 
+## 3.3.1
+
+### Patch Changes
+
+- 2974538: Maintenance: Update Patch & Minor
+- 55c8dac: Run type checking with TypeScript 7 (tsgo) via `svelte-check --tsgo`
+
 ## 3.3.0
 
 ### Minor Changes
