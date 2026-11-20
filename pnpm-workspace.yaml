@@ -3,6 +3,7 @@ allowBuilds:
   '@parcel/watcher': true
   '@tailwindcss/oxide': true
   esbuild: true
+  lefthook: false
   sharp: true
   workerd: true
 minimumReleaseAgeExclude:

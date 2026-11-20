@@ -1,7 +1,0 @@
-#!/usr/bin/env sh
-
-pnpm lint-staged
-# Disabled while working on getting the generated types to work with the service contract
-# if git diff --cached --name-only | grep -q '\.svelte$'; then
-#     pnpm run -r --filter=@whatsin/web check
-# fi

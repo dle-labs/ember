@@ -1,0 +1,17 @@
+# https://lefthook.dev/configuration/
+pre-commit:
+  piped: true
+  jobs:
+    - name: prettier
+      glob: '*.{js,ts,mts,cts,svelte,css,scss,postcss,md,json,yml}'
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
+
+    - name: eslint
+      glob: '*.{js,ts,mts,cts,svelte}'
+      run: pnpm exec eslint --fix {staged_files}
+      stage_fixed: true
+
+    - name: svelte-check
+      glob: '*.svelte'
+      run: pnpm check
